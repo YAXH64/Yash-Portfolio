@@ -6,255 +6,161 @@ import { vertexShader, fragmentShader } from './HeroShaders';
 import imgSpiderman from '../assets/spiderman/20260407_055437.png';
 import imgMan from '../assets/man/1775519899126.png';
 
+const BOOT_LINES = [
+  { text: 'Initializing portfolio_v1.0.0...', delay: 0.1 },
+  { text: 'Loading user profile: YASH_YADAV', delay: 0.4 },
+  { text: 'Stack: React · Three.js · GSAP · Python', delay: 0.7 },
+  { text: 'Status: Available for hire ✓', delay: 1.0, red: true },
+];
+
 export default function Hero() {
   const containerRef = useRef(null);
-  const cursorRef = useRef(null);
-  const textRef = useRef(null);
-  
-  // Create refs to hold things that need cleanup or updates
-  const uniformRef = useRef(null);
-  const mouseTarget = useRef({ x: 0.5, y: 0.5 });
+  const canvasRef    = useRef(null);
+  const nameRef      = useRef(null);
+  const uniformRef   = useRef(null);
+  const mouseTarget  = useRef({ x: 0.5, y: 0.5 });
   const mouseCurrent = useRef({ x: 0.5, y: 0.5 });
-  
-  const [isHovered, setIsHovered] = useState(false);
 
+  const [isHovered, setIsHovered]       = useState(false);
+  const [bootDone, setBootDone]         = useState(false);
+  const [visibleLines, setVisibleLines] = useState([]);
+
+  /* boot sequence */
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    const container = containerRef.current;
-    
-    // Initial Hero Entrance Animation (AOS style smooth fade-up)
-    gsap.fromTo(container, 
-      { opacity: 0, y: 80 }, 
-      { opacity: 1, y: 0, duration: 2, ease: "power3.out", delay: 0.1 }
-    );
-    
-    // Text entrance animation (Fade down)
-    if (textRef.current) {
-      gsap.fromTo(textRef.current,
-        { opacity: 0, y: -60 },
-        { opacity: 1, y: 0, duration: 1.5, ease: "power3.out", delay: 0.8 }
-      );
-    }
-    
-    // 1. Setup Three.js Scene
-    const scene = new THREE.Scene();
-    
-    // We use an orthographic camera to map perfectly to a screen setup
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance'
+    BOOT_LINES.forEach((line, i) => {
+      setTimeout(() => {
+        setVisibleLines(prev => [...prev, i]);
+        if (i === BOOT_LINES.length - 1) setTimeout(() => setBootDone(true), 400);
+      }, line.delay * 1000 + 600);
     });
-    
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    renderer.setSize(width, height);
+  }, []);
+
+  /* name entrance */
+  useEffect(() => {
+    if (!bootDone || !nameRef.current) return;
+    gsap.fromTo(nameRef.current,
+      { opacity: 0, x: -30 },
+      { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out' }
+    );
+  }, [bootDone]);
+
+  /* Three.js */
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const container = canvasRef.current;
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+    const W = container.clientWidth, H = container.clientHeight;
+    renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
     container.appendChild(renderer.domElement);
 
-    // 2. Load textures
-    const textureLoader = new THREE.TextureLoader();
-    let isTexturesLoaded = false;
-    
-    // Define uniforms up front so they can be mutated
     const uniforms = {
-      uTexture1: { value: null }, // Spiderman
-      uTexture2: { value: null }, // Man
-      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      uHovered: { value: 0.0 }, // 0 to 1 value smoothly handled by GSAP
-      uRadius: { value: 0.25 }, // Reveal radius size
-      uSoftness: { value: 0.15 }, // Softness of the edge
-      uScale: { value: 0.05 }, // Scale zoom amount
-      uResolution: { value: new THREE.Vector2(width, height) },
-      uImageResolution: { value: new THREE.Vector2(1920, 1080) } // Assuming 16:9 for default
+      uTexture1:       { value: null },
+      uTexture2:       { value: null },
+      uMouse:          { value: new THREE.Vector2(0.5, 0.5) },
+      uHovered:        { value: 0.0 },
+      uRadius:         { value: 0.28 },
+      uSoftness:       { value: 0.12 },
+      uScale:          { value: 0.04 },
+      uResolution:     { value: new THREE.Vector2(W, H) },
+      uImageResolution:{ value: new THREE.Vector2(1920, 1080) },
     };
-    
     uniformRef.current = uniforms;
 
-    Promise.all([
-      textureLoader.loadAsync(imgSpiderman),
-      textureLoader.loadAsync(imgMan)
-    ]).then(([tex1, tex2]) => {
-      // Improve texture visual quality
-      tex1.generateMipmaps = false;
-      tex1.minFilter = THREE.LinearFilter;
-      tex1.magFilter = THREE.LinearFilter;
-      
-      tex2.generateMipmaps = false;
-      tex2.minFilter = THREE.LinearFilter;
-      tex2.magFilter = THREE.LinearFilter;
-      
-      uniforms.uTexture1.value = tex1;
-      uniforms.uTexture2.value = tex2;
-      
-      // Update image resolution based on the first loaded texture's actual dimensions
-      if (tex1.image) {
-        uniforms.uImageResolution.value.set(tex1.image.width, tex1.image.height);
-      }
-      
-      isTexturesLoaded = true;
+    let loaded = false;
+    new THREE.TextureLoader();
+    const loader = new THREE.TextureLoader();
+    Promise.all([loader.loadAsync(imgSpiderman), loader.loadAsync(imgMan)]).then(([t1, t2]) => {
+      [t1, t2].forEach(t => { t.generateMipmaps = false; t.minFilter = t.magFilter = THREE.LinearFilter; });
+      uniforms.uTexture1.value = t1;
+      uniforms.uTexture2.value = t2;
+      if (t1.image) uniforms.uImageResolution.value.set(t1.image.width, t1.image.height);
+      loaded = true;
     });
 
-    // 3. Create full-screen plane geometry and shader material
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms
-    });
+    const geo = new THREE.PlaneGeometry(2, 2);
+    const mat = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+    scene.add(new THREE.Mesh(geo, mat));
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // 4. GSAP Ticker for render loop and smooth lerping
-    const renderTick = () => {
-      if (!isTexturesLoaded) return;
-      
-      // Lerp the mouse coordinates smoothly
-      mouseCurrent.current.x = gsap.utils.interpolate(mouseCurrent.current.x, mouseTarget.current.x, 0.1);
-      mouseCurrent.current.y = gsap.utils.interpolate(mouseCurrent.current.y, mouseTarget.current.y, 0.1);
-      
+    const tick = () => {
+      if (!loaded) return;
+      mouseCurrent.current.x = gsap.utils.interpolate(mouseCurrent.current.x, mouseTarget.current.x, 0.08);
+      mouseCurrent.current.y = gsap.utils.interpolate(mouseCurrent.current.y, mouseTarget.current.y, 0.08);
       uniforms.uMouse.value.set(mouseCurrent.current.x, mouseCurrent.current.y);
-      
-      // Also update DOM custom cursor position if needed
-      if(cursorRef.current) {
-        gsap.set(cursorRef.current, {
-           x: mouseCurrent.current.x * width,
-           y: mouseCurrent.current.y * height, // using normalized, so 0 top wait...
-           // Actually threejs UV y is 0 bottom, 1 top. But our uMouse is updated below. Let's fix cursor DOM below.
-        });
-      }
-
       renderer.render(scene, camera);
     };
-    
-    gsap.ticker.add(renderTick);
+    gsap.ticker.add(tick);
 
-    // 5. Setup interaction event handlers
-    const onMouseMove = (e) => {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / width;
-      // In Three.js UV space, Y=0 is bottom, Y=1 is top.
-      const y = 1.0 - ((e.clientY - rect.top) / height);
-      
-      mouseTarget.current.x = x;
-      mouseTarget.current.y = y;
-      
-      // For DOM cursor, use standard coordinates
-      if(cursorRef.current) {
-        // Just store regular pixel coords in DOM cursor directly for zero latency, 
-        // to have a quick cursor overlay if desired
-        gsap.to(cursorRef.current, {
-            x: e.clientX,
-            y: e.clientY,
-            duration: 0.1,
-            ease: "power2.out"
-        });
-      }
-    };
-    
-    const onMouseEnter = () => {
-      setIsHovered(true);
-      gsap.to(uniforms.uHovered, {
-        value: 1.0,
-        duration: 1.2,
-        ease: "power3.out"
-      });
-      if(cursorRef.current) {
-         gsap.to(cursorRef.current, { scale: 1, opacity: 1, duration: 0.3 });
-      }
-    };
-    
-    const onMouseLeave = () => {
-      setIsHovered(false);
-      gsap.to(uniforms.uHovered, {
-        value: 0.0,
-        duration: 1.2,
-        ease: "power3.out"
-      });
-      if(cursorRef.current) {
-         gsap.to(cursorRef.current, { scale: 0, opacity: 0, duration: 0.3 });
-      }
-    };
+    const onMove  = (e) => { const r = container.getBoundingClientRect(); mouseTarget.current.x = (e.clientX - r.left) / W; mouseTarget.current.y = 1 - (e.clientY - r.top) / H; };
+    const onEnter = () => { setIsHovered(true);  gsap.to(uniforms.uHovered, { value: 1, duration: 1, ease: 'power3.out' }); };
+    const onLeave = () => { setIsHovered(false); gsap.to(uniforms.uHovered, { value: 0, duration: 1, ease: 'power3.out' }); };
+    const onResize= () => { const w = container.clientWidth, h = container.clientHeight; renderer.setSize(w, h); uniforms.uResolution.value.set(w, h); };
 
-    container.addEventListener('mousemove', onMouseMove);
-    container.addEventListener('mouseenter', onMouseEnter);
-    container.addEventListener('mouseleave', onMouseLeave);
-
-    // 6. Handle resize
-    const onResize = () => {
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      renderer.setSize(w, h);
-      uniforms.uResolution.value.set(w, h);
-    };
-    
+    container.addEventListener('mousemove', onMove);
+    container.addEventListener('mouseenter', onEnter);
+    container.addEventListener('mouseleave', onLeave);
     window.addEventListener('resize', onResize);
 
-    // Mobile fallback (Tap)
-    const onTouch = (e) => {
-        if(e.touches.length > 0) {
-            const touch = e.touches[0];
-            const rect = container.getBoundingClientRect();
-            mouseTarget.current.x = (touch.clientX - rect.left) / width;
-            mouseTarget.current.y = 1.0 - ((touch.clientY - rect.top) / height);
-            
-            // Toggle hover effect on touch
-            if (!isHovered) {
-                onMouseEnter();
-            }
-        }
-    };
-    
-    container.addEventListener('touchstart', onTouch);
-    container.addEventListener('touchmove', onTouch);
-
-    // 7. Cleanup
     return () => {
-      gsap.ticker.remove(renderTick);
+      gsap.ticker.remove(tick);
+      container.removeEventListener('mousemove', onMove);
+      container.removeEventListener('mouseenter', onEnter);
+      container.removeEventListener('mouseleave', onLeave);
       window.removeEventListener('resize', onResize);
-      container.removeEventListener('mousemove', onMouseMove);
-      container.removeEventListener('mouseenter', onMouseEnter);
-      container.removeEventListener('mouseleave', onMouseLeave);
-      container.removeEventListener('touchstart', onTouch);
-      container.removeEventListener('touchmove', onTouch);
-      
-      container.removeChild(renderer.domElement);
-      renderer.dispose();
-      material.dispose();
-      geometry.dispose();
-      // NOTE: should realistically dispose textures too 
+      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      renderer.dispose(); mat.dispose(); geo.dispose();
     };
   }, []);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black flex items-center justify-center">
-      {/* Three.js Canvas Container */}
-      <div 
-        ref={containerRef} 
-        className="absolute inset-0 z-0 select-none"
+    <div
+      ref={containerRef}
+      className="relative w-screen h-screen bg-[var(--bg)] overflow-hidden grid-bg scanlines"
+      style={{ fontFamily: 'var(--mono)' }}
+    >
+      {/* ── canvas — right half ── */}
+      <div
+        ref={canvasRef}
+        className="absolute right-0 top-0 w-full md:w-[55%] h-full z-0 select-none"
+        style={{ maskImage: 'linear-gradient(to left, black 55%, transparent 100%)' }}
       />
-      
-      {/* Custom Cursor / Light Bloom Overlay */}
-      <div 
-        ref={cursorRef}
-        className="fixed top-0 left-0 w-32 h-32 rounded-full pointer-events-none z-20 mix-blend-screen opacity-0 scale-0"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-          transform: 'translate(-50%, -50%)' // Center the glow on the mouse point
-        }}
+      {/* canvas fade overlay */}
+      <div
+        className="absolute right-0 top-0 w-full md:w-[55%] h-full z-[1] pointer-events-none"
+        style={{ background: 'linear-gradient(to right, var(--bg) 0%, transparent 35%, rgba(6,6,6,0.2) 100%)' }}
       />
-      
-      {/* Foreground UI Components */}
-      <div ref={textRef} className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-center mx-auto w-full max-w-[90rem] px-8 lg:px-16 mt-20">
-        <div 
-          className="w-full flex flex-col md:flex-row justify-between md:items-end transition-all duration-700 ease-out transform gap-10" 
-          style={{ transform: isHovered ? 'translateY(-20px)' : 'translateY(0px)' }}
+
+      {/* ── left panel — full height, flex column to push content apart ── */}
+      <div className="absolute inset-0 z-10 flex flex-col justify-between px-8 md:px-14 lg:px-20 py-8 pointer-events-none"
+        style={{ paddingTop: '80px' }} /* clear navbar */
+      >
+
+        {/* TOP: boot lines */}
+        <div className="space-y-1 max-w-lg">
+          {BOOT_LINES.map((line, i) => (
+            <div
+              key={i}
+              className={`text-xs tracking-widest transition-all duration-300 ${
+                visibleLines.includes(i) ? 'opacity-100' : 'opacity-0'
+              } ${line.red ? 'text-[var(--red)]' : 'text-[var(--dim)]'}`}
+            >
+              <span className="text-[var(--red)] mr-2">$</span>
+              {line.text}
+              {i === BOOT_LINES.length - 1 && visibleLines.includes(i) && !bootDone && (
+                <span className="blink ml-1">_</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* MIDDLE: name block — vertically centered in remaining space */}
+        <div
+          ref={nameRef}
+          className={`transition-opacity duration-500 max-w-2xl ${bootDone ? 'opacity-100' : 'opacity-0'}`}
         >
+<<<<<<< HEAD
             
           {/* Left Side: Intro and Title */}
           <div className="flex-1 max-w-lg lg:max-w-xl text-left">
@@ -267,25 +173,99 @@ export default function Hero() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 font-serif italic font-light pr-2">Excellence</span> from<br />
               End to End
             </h1>
+=======
+          {/* label */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-px bg-[var(--red)]" />
+            <span className="text-xs text-[var(--red)] tracking-[0.3em] uppercase">frontend.developer</span>
+>>>>>>> 135b58e (New Updates)
           </div>
-          
-          {/* Right Side: Description and CTA */}
-          <div className=" flex-1 max-w-md text-left md:text-right flex flex-col md:items-end">
-            <p className="w-110 text-lg md:text-xl text-gray-300 drop-shadow-xl font-light tracking-wide leading-relaxed mb-8">
-              I build scalable web applications that merge striking design with robust, high-performance functionality. Seamless interactions, engineered for the future.
-            </p>
-            
-            <button className="pointer-events-auto px-8 py-4 rounded-full border border-white/30 text-white text-sm tracking-[0.2em] uppercase font-medium hover:bg-white hover:text-black hover:border-white transition-all duration-500 backdrop-blur-sm shadow-xl inline-block">
-              Start a Project
-            </button>
+
+          {/* name */}
+          <h1
+            className="text-[clamp(4rem,11vw,8rem)] font-black leading-[0.88] tracking-tighter text-[var(--white)] mb-6 relative"
+            style={{ fontFamily: 'var(--display)' }}
+          >
+            YASH
+            <br />
+            <span className="text-[var(--red)]">YADAV</span>
+            <span
+              aria-hidden
+              className="absolute inset-0 text-[var(--red)] opacity-0 hover:opacity-50"
+              style={{ animation: 'glitch1 3s infinite', animationDelay: '2s', mixBlendMode: 'screen' }}
+            >
+              YASH<br />YADAV
+            </span>
+          </h1>
+
+          {/* one-liner */}
+          <p className="text-[var(--mid)] text-base leading-relaxed max-w-sm mb-7">
+            I craft interfaces that merge sharp design with solid engineering — from pixel-precise UIs to AI-powered systems.
+          </p>
+
+          {/* skill tags */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {['HTML', 'CSS', 'JS', 'React', 'Python', 'Tailwind', 'Three.js', 'Spline 3D'].map(s => (
+              <span
+                key={s}
+                className="text-xs tracking-widest uppercase px-3 py-1 border border-[var(--border)] text-[var(--dim)] hover:text-[var(--red)] hover:border-[var(--red-border)] transition-all duration-200 cursor-default"
+              >
+                {s}
+              </span>
+            ))}
           </div>
-            
+
+          {/* ── BUTTONS — highly visible ── */}
+          <div className="flex items-center gap-4 pointer-events-auto flex-wrap">
+            {/* Primary — solid red, hard to miss */}
+            <a
+              href="#projects"
+              className="group flex items-center gap-3 px-8 py-4 bg-[var(--red)] text-black text-sm tracking-[0.15em] uppercase font-black hover:bg-white transition-colors duration-200 shadow-[0_0_24px_rgba(255,45,45,0.5)]"
+            >
+              view_work()
+              <span className="group-hover:translate-x-1 transition-transform duration-200 text-base">→</span>
+            </a>
+            {/* Secondary — white border, clearly a button */}
+            <a
+              href="https://github.com/yashyadav"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-3 px-8 py-4 border-2 border-[var(--white)] text-[var(--white)] text-sm tracking-[0.15em] uppercase font-bold hover:bg-white hover:text-black transition-all duration-200"
+            >
+              github.open()
+              <span className="group-hover:translate-x-1 transition-transform duration-200 text-base">↗</span>
+            </a>
+          </div>
+        </div>
+
+        {/* BOTTOM: status strip */}
+        <div className="flex items-center justify-between border-t border-[var(--border)] pt-4 max-w-2xl">
+          <div className="flex items-center gap-4 text-xs text-[var(--dim)] tracking-widest flex-wrap gap-y-1">
+            <span>LOC:PUNE,IN</span>
+            <span>·</span>
+            <span>ROLE:FRONTEND_DEV</span>
+            <span>·</span>
+            <span className="text-[var(--red)]">OPEN_TO_WORK<span className="blink">_</span></span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--dim)] tracking-widest">
+            <span className="blink text-[var(--red)]">●</span>
+            <span>SCROLL_TO_EXPLORE</span>
+          </div>
         </div>
       </div>
-      
-      {/* Overlay border/frame for cinematic effect */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/50 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
+
+      {/* corner brackets */}
+      <div className="absolute top-[72px] left-6 w-6 h-6 border-t border-l border-[var(--border)] pointer-events-none z-10" />
+      <div className="absolute bottom-14 right-8 w-6 h-6 border-b border-r border-[var(--border)] pointer-events-none z-10" />
+
+      {/* vertical label right edge */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10 pointer-events-none hidden md:flex flex-col items-center gap-2">
+        <div className="w-px h-16 bg-gradient-to-b from-transparent to-[var(--border)]" />
+        <span className="text-xs text-[var(--dim)] tracking-widest" style={{ writingMode: 'vertical-lr' }}>
+          {isHovered ? 'REVEAL_MODE:ON' : 'HOVER_TO_REVEAL'}
+        </span>
+        <div className="w-px h-16 bg-gradient-to-t from-transparent to-[var(--border)]" />
+      </div>
     </div>
   );
 }

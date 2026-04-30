@@ -2,98 +2,63 @@ import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 const NAV_LINKS = [
-  { name: 'Home', href: '#' },
-  { name: 'About', href: '#about' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'home',     href: '#',         pid: '00' },
+  { name: 'about',    href: '#about',    pid: '01' },
+  { name: 'projects', href: '#projects', pid: '02' },
+  { name: 'contact',  href: '#contact',  pid: '03' },
 ];
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const navRef = useRef(null);
-  const linksRef = useRef([]);
-  const mobileMenuRef = useRef(null);
-  const mobileLinksRef = useRef([]);
-  const glowRef = useRef(null);
+  const [scrolled, setScrolled]   = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [time, setTime]           = useState('00:00:00');
+  const [active, setActive]       = useState('00');
+  const navRef    = useRef(null);
+  const menuRef   = useRef(null);
 
-  // Scroll Event Listener
+  /* live clock */
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const tick = () => setTime(new Date().toTimeString().slice(0,8));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, []);
 
-  // Initial Load Animation
+  /* scroll */
   useEffect(() => {
-    const tl = gsap.timeline();
-    
-    // Animate Navbar dropping down
-    tl.fromTo(navRef.current, 
-      { y: -100, opacity: 0 }, 
-      { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.2 }
+    const fn = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  /* entrance */
+  useEffect(() => {
+    gsap.fromTo(navRef.current,
+      { y: -60, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: 0.4 }
     );
-    
-    // Stagger in the links
-    if (linksRef.current.length > 0) {
-      tl.fromTo(linksRef.current,
-        { y: -20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' },
-        "-=0.6"
-      );
-    }
   }, []);
 
-  // Mouse Glow Interaction
-  const handleMouseMove = (e) => {
-    if (!glowRef.current || !navRef.current) return;
-    const rect = navRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    gsap.to(glowRef.current, {
-      x,
-      y,
-      duration: 0.4,
-      ease: 'power2.out'
-    });
-  };
-
-  // Mobile Menu Animation Toggle
+  /* mobile menu slide */
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      gsap.to(mobileMenuRef.current, {
-        clipPath: 'circle(150% at 90% 10%)',
-        duration: 0.8,
-        ease: 'power3.inOut'
-      });
-      gsap.fromTo(mobileLinksRef.current,
-        { y: 50, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out', delay: 0.3 }
-      );
-    } else {
-      gsap.to(mobileMenuRef.current, {
-        clipPath: 'circle(0% at 90% 10%)',
-        duration: 0.6,
-        ease: 'power3.inOut'
-      });
-    }
-  }, [isMobileMenuOpen]);
+    if (!menuRef.current) return;
+    gsap.to(menuRef.current, {
+      y: menuOpen ? 0 : '-100%',
+      duration: 0.35,
+      ease: menuOpen ? 'power3.out' : 'power3.in',
+    });
+  }, [menuOpen]);
 
   return (
     <>
-      <nav 
+      <nav
         ref={navRef}
-        onMouseMove={handleMouseMove}
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 overflow-hidden ${
-          isScrolled 
-            ? 'bg-black/40 backdrop-blur-md border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] py-4' 
-            : 'bg-transparent py-6'
+        style={{ fontFamily: 'var(--mono)' }}
+        className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${
+          scrolled ? 'bg-[#060606]/95 backdrop-blur-sm' : 'bg-transparent'
         }`}
       >
+<<<<<<< HEAD
         {/* Subtle Background Glow Mask */}
         <div 
           ref={glowRef}
@@ -112,78 +77,115 @@ export default function Navbar() {
             <span className="text-white font-bold tracking-widest uppercase text-sm ml-2 opacity-90 group-hover:opacity-100 transition-opacity">
               Yash
             </span>
+=======
+        {/* ── status bar ── */}
+        <div className="hidden md:flex items-center justify-between px-6 py-1 border-b border-[var(--border)]">
+          <div className="flex items-center gap-4 text-xs text-[var(--dim)] tracking-widest">
+            <span className="text-[var(--red)] opacity-60">▶</span>
+            <span>SYSTEM::PORTFOLIO</span>
+            <span className="text-[var(--dim)]">/</span>
+            <span>USER::YASH_YADAV</span>
+            <span className="text-[var(--dim)]">/</span>
+            <span>BUILD::v1.0.0</span>
+>>>>>>> 135b58e (New Updates)
           </div>
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-[var(--mid)]">MEM:OK</span>
+            <span className="text-[var(--dim)]">|</span>
+            <span className="text-[var(--red)] tracking-widest">{time}<span className="blink">_</span></span>
+          </div>
+        </div>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-10">
-            {NAV_LINKS.map((link, index) => (
-              <a 
-                key={link.name} 
-                href={link.href}
-                ref={el => linksRef.current[index] = el}
-                className="relative text-gray-400 hover:text-white text-sm font-medium tracking-wide transition-colors duration-300 group"
+        {/* ── main row ── */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-[var(--border)]">
+
+          {/* logo */}
+          <a href="#" className="group flex items-center gap-2">
+            <span className="text-[var(--dim)] text-xs">&lt;</span>
+            <span
+              className="text-sm font-bold tracking-tight text-[var(--white)] group-hover:text-[var(--red)] transition-colors duration-200"
+              style={{ fontFamily: 'var(--display)' }}
+            >
+              YY
+            </span>
+            <span className="text-[var(--dim)] text-xs">/&gt;</span>
+            <span className="hidden sm:block text-xs text-[var(--dim)] tracking-[0.25em] ml-2 uppercase">
+              yash.dev
+            </span>
+          </a>
+
+          {/* desktop links */}
+          <div className="hidden md:flex items-center">
+            {NAV_LINKS.map((l, i) => (
+              <a
+                key={l.name}
+                href={l.href}
+                onClick={() => setActive(l.pid)}
+                className={`relative px-5 py-2 text-sm tracking-[0.18em] uppercase transition-colors duration-150 group ${
+                  active === l.pid
+                    ? 'text-[var(--red)]'
+                    : 'text-[var(--mid)] hover:text-[var(--white)]'
+                }`}
               >
-                {link.name}
-                {/* Center-out underline animation */}
-                <span className="absolute -bottom-1 left-1/2 w-0 h-[1px] bg-white transition-all duration-300 group-hover:w-full group-hover:left-0"></span>
+                <span className="text-xs text-[var(--dim)] mr-1">{l.pid}.</span>
+                {l.name}
+                {/* active underline */}
+                {active === l.pid && (
+                  <span className="absolute bottom-0 left-4 right-4 h-px bg-[var(--red)]" />
+                )}
+                {/* hover underline */}
+                <span className="absolute bottom-0 left-4 right-4 h-px bg-[var(--dim)] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
               </a>
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <button 
-              ref={el => linksRef.current[NAV_LINKS.length] = el} // animate with the links
-              className="relative px-6 py-2.5 rounded-full overflow-hidden group bg-transparent border border-white/20 text-white text-sm font-medium tracking-wider hover:border-white/60 transition-colors duration-300"
+          {/* CTA */}
+          <div className="flex items-center gap-3">
+            <a
+              href="#contact"
+              className="hidden md:flex items-center gap-2 px-4 py-1.5 text-xs tracking-[0.2em] uppercase text-[var(--red)] border border-[var(--red-border)] hover:bg-[var(--red-glow)] hover:border-[var(--red)] transition-all duration-200"
             >
-              <span className="relative z-10 group-hover:text-black transition-colors duration-300">Let's Talk</span>
-              {/* Button Inner Fill Effect */}
-              <div className="absolute inset-0 h-full w-full bg-white scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--red)] animate-pulse" />
+              hire_me()
+            </a>
+
+            {/* mobile toggle */}
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              className="md:hidden text-sm text-[var(--mid)] hover:text-[var(--red)] transition-colors tracking-widest"
+            >
+              {menuOpen ? '[close]' : '[menu]'}
             </button>
           </div>
-
-          {/* Mobile Hamburger Toggle */}
-          <button 
-            className="md:hidden text-white p-2 z-50 relative"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <div className="w-6 h-5 flex flex-col justify-between">
-              <span className={`w-full h-[1px] bg-white transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-[10px]' : ''}`} />
-              <span className={`w-full h-[1px] bg-white transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
-              <span className={`w-full h-[1px] bg-white transition-transform duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-[10px]' : ''}`} />
-            </div>
-          </button>
         </div>
       </nav>
 
-      {/* Mobile Fullscreen Menu */}
-      <div 
-        ref={mobileMenuRef}
-        className="fixed inset-0 bg-black/95 backdrop-blur-xl z-40 flex flex-col justify-center items-center"
-        style={{ clipPath: 'circle(0% at 90% 10%)' }}
+      {/* ── mobile fullscreen menu ── */}
+      <div
+        ref={menuRef}
+        style={{ fontFamily: 'var(--mono)', transform: 'translateY(-100%)' }}
+        className="fixed inset-0 z-40 bg-[#060606] flex flex-col pt-24 px-6"
       >
-        <div className="flex flex-col space-y-8 text-center mt-10">
-          {NAV_LINKS.map((link, index) => (
-            <a 
-              key={link.name} 
-              href={link.href}
-              ref={el => mobileLinksRef.current[index] = el}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-3xl font-light text-gray-400 hover:text-white transition-colors tracking-widest relative group"
-            >
-              {link.name}
-              <span className="absolute -bottom-2 left-1/2 w-0 h-[1px] bg-white transition-all duration-300 group-hover:w-1/2 group-hover:left-1/4"></span>
-            </a>
-          ))}
-          
-          <button 
-            ref={el => mobileLinksRef.current[NAV_LINKS.length] = el}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="mt-8 px-8 py-3 rounded-full border border-white text-white tracking-widest hover:bg-white hover:text-black transition-all duration-300"
+        <p className="text-xs text-[var(--dim)] tracking-widest mb-8">// NAVIGATION</p>
+        {NAV_LINKS.map(l => (
+          <a
+            key={l.name}
+            href={l.href}
+            onClick={() => { setMenuOpen(false); setActive(l.pid); }}
+            className="flex items-center gap-4 py-5 border-b border-[var(--border)] text-[var(--mid)] hover:text-[var(--red)] transition-colors duration-200 group"
           >
-            Hire Me
-          </button>
-        </div>
+            <span className="text-xs text-[var(--dim)] w-6">{l.pid}</span>
+            <span className="text-lg tracking-widest uppercase">{l.name}</span>
+            <span className="ml-auto text-[var(--dim)] group-hover:text-[var(--red)] transition-colors">→</span>
+          </a>
+        ))}
+        <a
+          href="mailto:yashyadav@email.com"
+          className="mt-8 flex items-center justify-center gap-2 py-4 border border-[var(--red-border)] text-[var(--red)] text-xs tracking-widest uppercase hover:bg-[var(--red-glow)] transition-all"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--red)] animate-pulse" />
+          hire_me()
+        </a>
       </div>
     </>
   );

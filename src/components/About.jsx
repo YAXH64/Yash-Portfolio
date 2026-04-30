@@ -1,186 +1,237 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Reuse our hero assets for the dual-identity mask effect prototype
 import imgSpiderman from '../assets/spiderman/20260407_055437.png';
 import imgMan from '../assets/man/1775519899126.png';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function About() {
-  const sectionRef = useRef(null);
-  const textContainerRef = useRef(null);
-  const imageContainerRef = useRef(null);
-  const maskRef = useRef(null);
-  
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+const SKILLS = [
+  { name: 'HTML / CSS',      level: 90, tag: 'frontend' },
+  { name: 'JavaScript',      level: 82, tag: 'frontend' },
+  { name: 'React',           level: 78, tag: 'frontend' },
+  { name: 'Tailwind CSS',    level: 85, tag: 'frontend' },
+  { name: 'GSAP / Three.js', level: 70, tag: 'frontend' },
+  { name: 'Python',          level: 75, tag: 'backend'  },
+  { name: 'FastAPI',         level: 65, tag: 'backend'  },
+  { name: 'PyTorch / HF',    level: 60, tag: 'ai'       },
+];
 
-  // 1. ScrollTrigger entrance animation
+const FACTS = [
+  { key: 'name',       val: '"Yash Yadav"' },
+  { key: 'role',       val: '"Frontend Developer"' },
+  { key: 'location',   val: '"Nashik, India"' },
+  { key: 'available',  val: 'true',   red: true },
+  { key: 'projects',   val: '4' },
+  { key: 'hackathons', val: '2' },
+  { key: 'coffee',     val: 'Infinity' },
+];
+
+/* extra decorative entries to fill the JSON block */
+const EXTRA_FACTS = [
+  { key: 'stack',        val: '["React","Python","GSAP","Three.js"]' },
+  { key: 'ai_exp',       val: 'true', red: true },
+  { key: 'open_source',  val: 'true', red: true },
+  { key: 'status',       val: '"Building cool stuff"' },
+];
+
+function SkillBar({ skill, index }) {
+  const barRef  = useRef(null);
+  const fillRef = useRef(null);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Create a timeline bound to the scroll position
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%", // triggers when the top of the section hits 75% of the viewport height
-          toggleActions: "play none none reverse" // play forwards on scroll down, reverse on scroll out
+      gsap.fromTo(fillRef.current,
+        { width: '0%' },
+        {
+          width: `${skill.level}%`,
+          duration: 1.2,
+          ease: 'power3.out',
+          delay: index * 0.07,
+          scrollTrigger: { trigger: barRef.current, start: 'top 85%', toggleActions: 'play none none reverse' },
         }
-      });
-
-      // Select all text lines that have the 'stagger-reveal' class
-      const textElements = textContainerRef.current.querySelectorAll('.stagger-reveal');
-      
-      // Select the image container
-      const imgElement = imageContainerRef.current;
-
-      tl.fromTo(imgElement, 
-        { opacity: 0, x: -50 }, 
-        { opacity: 1, x: 0, duration: 1.2, ease: "power3.out" }
-      )
-      .fromTo(textElements, 
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power3.out" },
-        "-=0.8" // start before image is fully in
       );
-      
-    }, sectionRef);
-
-    return () => ctx.revert(); // clean up ScrollTrigger
-  }, []);
-
-  // 2. Interactive Spotlight Mask
-  const handleMouseMove = (e) => {
-    if (!imageContainerRef.current) return;
-    
-    // Get mouse position relative to the image container
-    const rect = imageContainerRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    // Use GSAP to smoothly lerp the mask center
-    gsap.to(maskRef.current, {
-      '--x': `${x}%`,
-      '--y': `${y}%`,
-      duration: 0.4,
-      ease: 'power2.out'
     });
-  };
+    return () => ctx.revert();
+  }, [skill.level, index]);
 
-  const handleMouseLeave = () => {
-    // Return to default center position smoothly
-    gsap.to(maskRef.current, {
-      '--x': '50%',
-      '--y': '50%',
-      duration: 0.8,
-      ease: 'power3.out'
-    });
-  };
+  const tagColor =
+    skill.tag === 'frontend' ? 'text-[var(--red)]' :
+    skill.tag === 'ai'       ? 'text-purple-400'   : 'text-blue-400';
 
   return (
-    <section 
-    id='about'
-      ref={sectionRef} 
-      className="relative w-full min-h-screen bg-black flex items-center justify-center py-24 px-6 md:px-12 lg:px-24 overflow-hidden"
+    <div ref={barRef}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`text-xs tracking-widest ${tagColor} opacity-70`}>[{skill.tag}]</span>
+          <span className="text-sm text-[var(--bright)] tracking-wide">{skill.name}</span>
+        </div>
+        <span className="text-xs text-[var(--mid)]">{skill.level}%</span>
+      </div>
+      <div className="h-px w-full bg-[var(--border)] relative">
+        <div ref={fillRef} className="absolute top-0 left-0 h-px bg-[var(--red)]" style={{ width: 0 }} />
+        {[25, 50, 75].map(t => (
+          <div key={t} className="absolute top-0 w-px h-2 -translate-y-0.5 bg-[var(--dim)]" style={{ left: `${t}%` }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function About() {
+  const sectionRef = useRef(null);
+  const leftRef    = useRef(null);
+  const rightRef   = useRef(null);
+  const maskRef    = useRef(null);
+  const imgWrapRef = useRef(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const st = { trigger: sectionRef.current, start: 'top 70%', toggleActions: 'play none none reverse' };
+      gsap.fromTo(leftRef.current,  { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: st });
+      gsap.fromTo(rightRef.current, { opacity: 0, x:  40 }, { opacity: 1, x: 0, duration: 0.9, ease: 'power3.out', delay: 0.15, scrollTrigger: st });
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
+  const handleMove = (e) => {
+    if (!imgWrapRef.current || !maskRef.current) return;
+    const r = imgWrapRef.current.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width)  * 100;
+    const y = ((e.clientY - r.top)  / r.height) * 100;
+    gsap.to(maskRef.current, { '--mx': `${x}%`, '--my': `${y}%`, duration: 0.3, ease: 'power2.out' });
+  };
+  const handleLeave = () =>
+    gsap.to(maskRef.current, { '--mx': '50%', '--my': '50%', duration: 0.7, ease: 'power3.out' });
+
+  return (
+    <section
+      id="about"
+      ref={sectionRef}
+      className="relative w-full bg-[var(--bg)] grid-bg overflow-hidden py-24 px-6 md:px-12 lg:px-20"
+      style={{ fontFamily: 'var(--mono)' }}
     >
-      {/* Background Ambience Layer */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-900/10 blur-[120px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-30 mix-blend-overlay" />
+      {/* section label */}
+      <div className="flex items-center gap-3 mb-14 max-w-[90rem] mx-auto">
+        <span className="text-[var(--red)] text-xs tracking-widest">01.</span>
+        <div className="h-px w-[60px] bg-[var(--red)]" />
+        <span className="text-xs text-[var(--dim)] tracking-[0.3em] uppercase">about_me.jsx</span>
+        <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
-      <div className="max-w-[90rem] w-full grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center relative z-10">
-        
-        {/* Left Column: Interactive Portrait */}
-        <div 
-          ref={imageContainerRef}
-          className="relative w-full aspect-[4/5] max-w-md mx-auto lg:max-w-none rounded-2xl overflow-hidden cursor-crosshair group shadow-2xl border border-white/5"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{ transform: 'translateZ(0)' }} // Hardware acceleration
-        >
-          {/* Base Layer: Developer Portrait (Moody/Dark) */}
-          <img 
-            src={imgMan} 
-            alt="Developer Persona" 
-            className="absolute inset-0 w-full h-full object-cover object-center grayscale opacity-60 mix-blend-luminosity brightness-75 transition-all duration-700 group-hover:scale-105"
-          />
+      {/* ── grid: left fixed width, right takes rest, BOTH stretch to same height ── */}
+      <div className="max-w-[90rem] mx-auto grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-10 lg:gap-16 items-stretch">
 
-          {/* Masked Overlay: Superhero Persona (Vibrant) */}
-          <div 
-            ref={maskRef}
-            className="absolute inset-0 w-full h-full"
-            style={{
-              '--x': '50%',
-              '--y': '50%',
-              // The polygon logic simulates a circular spotlight reveal
-              // For a soft glowing edge, clip-path doesn't support blur inherently, but this acts perfectly as the mask.
-              clipPath: 'circle(15% at var(--x) var(--y))',
-              transition: 'clip-path 0.1s ease-out'
-            }}
+        {/* ── LEFT — flex col, stretches full height ── */}
+        <div ref={leftRef} className="flex flex-col gap-0">
+
+          {/* portrait — fixed height */}
+          <div
+            ref={imgWrapRef}
+            className="relative w-full overflow-hidden border border-[var(--border)] cursor-crosshair group"
+            style={{ height: '420px' }}
+            onMouseMove={handleMove}
+            onMouseLeave={handleLeave}
           >
-            <img 
-              src={imgSpiderman} 
-              alt="Hidden Superhero Persona" 
-              className="absolute inset-0 w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-[2s] ease-out"
+            <img src={imgMan} alt="Yash"
+              className="absolute inset-0 w-full h-full object-cover object-top grayscale brightness-50 transition-transform duration-700 group-hover:scale-105"
             />
-            
-            {/* Inner spotlight glow matched inside the mask */}
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-black/20 to-black/80" />
+            <div ref={maskRef} className="absolute inset-0"
+              style={{ '--mx': '50%', '--my': '50%', clipPath: 'circle(14% at var(--mx) var(--my))', transition: 'clip-path 0.08s linear' }}
+            >
+              <img src={imgSpiderman} alt="" className="absolute inset-0 w-full h-full object-cover object-top scale-105" />
+            </div>
+            <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none">
+              <div className="flex items-start justify-between">
+                <span className="text-xs text-[var(--dim)] tracking-widest border border-[var(--border)] px-2 py-1 bg-[#060606]/70">IMG_CAPTURE.RAW</span>
+                <span className="text-xs text-[var(--red)] tracking-widest">● REC</span>
+              </div>
+              <div className="border-t border-[var(--border)] pt-3 bg-gradient-to-t from-[#060606] to-transparent px-1 pb-1">
+                <p className="text-[var(--white)] text-sm font-bold tracking-widest" style={{ fontFamily: 'var(--display)' }}>YASH YADAV</p>
+                <p className="text-[var(--red)] text-xs tracking-widest mt-1">FRONTEND_DEVELOPER</p>
+              </div>
+            </div>
+            <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[var(--red)] opacity-40 pointer-events-none" />
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[var(--red)] opacity-40 pointer-events-none" />
           </div>
 
-          {/* Interaction Hint Overlay */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-             <div className="w-24 h-24 rounded-full border border-white/20 scale-150 animate-ping absolute" />
+          {/* profile.json — flex-1 fills ALL remaining left column height */}
+          <div className="border border-t-0 border-[var(--border)] bg-[var(--bg2)] p-5 flex-1 flex flex-col">
+            <p className="text-xs text-[var(--dim)] tracking-widest mb-3">// profile.json</p>
+            <div className="space-y-2 flex-1">
+              <p className="text-sm text-[var(--dim)]">{'{'}</p>
+              {[...FACTS, ...EXTRA_FACTS].map((f, i, arr) => (
+                <p key={f.key} className="text-sm pl-4">
+                  <span className="text-blue-400">"{f.key}"</span>
+                  <span className="text-[var(--dim)]">: </span>
+                  <span className={f.red ? 'text-[var(--red)]' : 'text-green-400'}>{f.val}</span>
+                  {i < arr.length - 1 && <span className="text-[var(--dim)]">,</span>}
+                </p>
+              ))}
+              <p className="text-sm text-[var(--dim)]">{'}'}</p>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Story & Details */}
-        <div ref={textContainerRef} className="flex flex-col justify-center space-y-10">
-          
-          <div className="overflow-hidden">
-            <h2 className="stagger-reveal text-5xl md:text-6xl font-bold tracking-tighter text-white font-sans leading-tight">
-              The Dual <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-purple-500 font-serif italic pr-4">Persona</span>
-            </h2>
-          </div>
+        {/* ── RIGHT — fills same height as left via items-stretch ── */}
+        <div ref={rightRef} className="flex flex-col gap-8">
 
-          <div className="overflow-hidden">
-            <p className="stagger-reveal text-lg md:text-xl text-gray-400 font-light leading-relaxed max-w-xl">
-              There are two sides to every great digital experience. The relentless logic of the backend, and the striking, emotional pull of the frontend. As a Full-Stack Developer, my superpower lies in bridging that gap—masking complex, high-performance web architecture behind beautiful, fluid, and fiercely creative user interfaces.
+          {/* bio */}
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-xs text-[var(--dim)] tracking-widest">// bio.txt</span>
+              <div className="h-px flex-1 bg-[var(--border)]" />
+            </div>
+            <p className="text-[var(--bright)] text-base leading-[1.9]">
+              I'm a <span className="text-[var(--red)]">Frontend Developer</span> from Pune, India who
+              obsesses over the intersection of{' '}
+              <span className="text-[var(--white)]">design and engineering</span>.
+              I build interfaces that feel alive — pixel-precise, fast, and impossible to ignore.
+            </p>
+            <p className="text-[var(--mid)] text-base leading-[1.9] mt-4">
+              From fine-tuning Vision Transformers at ~92% accuracy to building real-time emergency
+              platforms — I work across the stack, but the frontend is where I live. I entered the
+              Meta × HuggingFace Hackathon 2026 and keep shipping things that actually matter.
             </p>
           </div>
 
-          {/* Expertise Highlights */}
-          <div className="overflow-hidden">
-            <div className="stagger-reveal grid grid-cols-2 gap-x-8 gap-y-4 pt-4 border-t border-white/10 max-w-xl">
-              {[
-                "Full-Stack Fluidity", 
-                "Motion & Micro-Interactions", 
-                "System Architecture", 
-                "Pixel-Perfect UIs"
-              ].map((skill, i) => (
-                <div key={i} className="flex items-center space-x-3 group">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-red-500 transition-colors duration-300" />
-                  <span className="text-gray-300 text-sm md:text-base font-medium tracking-wide uppercase group-hover:text-white transition-colors duration-300">
-                    {skill}
-                  </span>
-                </div>
-              ))}
+          {/* skills */}
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-xs text-[var(--dim)] tracking-widest">// skills.config</span>
+              <div className="h-px flex-1 bg-[var(--border)]" />
+            </div>
+            <div className="space-y-5">
+              {SKILLS.map((s, i) => <SkillBar key={s.name} skill={s} index={i} />)}
             </div>
           </div>
 
-          {/* Quote Block */}
-          <div className="overflow-hidden mt-6">
-            <blockquote className="stagger-reveal border-l-2 border-red-500/50 pl-6 py-2">
-              <p className="text-xl md:text-2xl text-gray-200 font-serif italic">
-                “Logic builds the foundation. <br /> Imagination breaks the boundaries.”
-              </p>
-            </blockquote>
+          {/* quote */}
+          <div className="border-l-2 border-[var(--red)] pl-5 py-1">
+            <p className="text-xs text-[var(--dim)] tracking-widest mb-2">$ echo $PHILOSOPHY</p>
+            <p className="text-[var(--bright)] text-base italic leading-relaxed">
+              "Code is craft. Design is intent. Together, they become experience."
+            </p>
           </div>
-          
-        </div>
 
+          {/* CTAs — highlighted buttons */}
+          <div className="flex flex-wrap gap-4 mt-auto">
+            <a
+              href="#projects"
+              className="text-sm tracking-widest uppercase px-7 py-3.5 bg-[var(--red)] text-black font-black hover:bg-white transition-colors duration-200 shadow-[0_0_20px_rgba(255,45,45,0.4)]"
+            >
+              see_projects()
+            </a>
+            <a
+              href="#contact"
+              className="text-sm tracking-widest uppercase px-7 py-3.5 border-2 border-[var(--white)] text-[var(--white)] font-bold hover:bg-white hover:text-black transition-all duration-200"
+            >
+              get_in_touch()
+            </a>
+          </div>
+
+        </div>
       </div>
     </section>
   );
