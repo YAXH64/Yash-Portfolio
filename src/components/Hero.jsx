@@ -160,25 +160,10 @@ export default function Hero() {
           ref={nameRef}
           className={`transition-opacity duration-500 max-w-2xl ${bootDone ? 'opacity-100' : 'opacity-0'}`}
         >
-<<<<<<< HEAD
-            
-          {/* Left Side: Intro and Title */}
-          <div className="flex-1 max-w-lg lg:max-w-xl text-left">
-            <p className="text-sm md:text-base text-gray-300 font-medium tracking-widest uppercase mb-6 opacity-90 drop-shadow-md">
-              Hey, I’m Yash Yadav
-            </p>
-            
-            <h1 className="text-2xl md:text-3xl lg:text-[1rem] xl:text-[3.5rem] font-bold tracking-tighter drop-shadow-2xl leading-[1.05] font-sans">
-              Crafting Digital<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500 font-serif italic font-light pr-2">Excellence</span> from<br />
-              End to End
-            </h1>
-=======
           {/* label */}
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-px bg-[var(--red)]" />
             <span className="text-xs text-[var(--red)] tracking-[0.3em] uppercase">frontend.developer</span>
->>>>>>> 135b58e (New Updates)
           </div>
 
           {/* name */}

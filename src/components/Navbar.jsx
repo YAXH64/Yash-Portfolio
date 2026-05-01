@@ -58,26 +58,6 @@ export default function Navbar() {
           scrolled ? 'bg-[#060606]/95 backdrop-blur-sm' : 'bg-transparent'
         }`}
       >
-<<<<<<< HEAD
-        {/* Subtle Background Glow Mask */}
-        <div 
-          ref={glowRef}
-          className="pointer-events-none absolute w-[300px] h-[300px] bg-white/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 mix-blend-screen opacity-0 md:opacity-100 transition-opacity duration-300"
-        />
-
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-10">
-          
-          {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer group">
-            {/* Minimalist Spider/Web-inspired SVG Logo */}
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white transition-transform duration-500 group-hover:rotate-45 group-hover:scale-110">
-              <path d="M12 2L12 22M2 12L22 12M5 5L19 19M5 19L19 5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-              <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-            </svg>
-            <span className="text-white font-bold tracking-widest uppercase text-sm ml-2 opacity-90 group-hover:opacity-100 transition-opacity">
-              Yash
-            </span>
-=======
         {/* ── status bar ── */}
         <div className="hidden md:flex items-center justify-between px-6 py-1 border-b border-[var(--border)]">
           <div className="flex items-center gap-4 text-xs text-[var(--dim)] tracking-widest">
@@ -87,7 +67,6 @@ export default function Navbar() {
             <span>USER::YASH_YADAV</span>
             <span className="text-[var(--dim)]">/</span>
             <span>BUILD::v1.0.0</span>
->>>>>>> 135b58e (New Updates)
           </div>
           <div className="flex items-center gap-3 text-xs">
             <span className="text-[var(--mid)]">MEM:OK</span>
@@ -180,7 +159,7 @@ export default function Navbar() {
           </a>
         ))}
         <a
-          href="mailto:yashyadav@email.com"
+          href="mailto:yashyadav1.dev@email.com"
           className="mt-8 flex items-center justify-center gap-2 py-4 border border-[var(--red-border)] text-[var(--red)] text-xs tracking-widest uppercase hover:bg-[var(--red-glow)] transition-all"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--red)] animate-pulse" />

@@ -21,7 +21,7 @@ const SKILLS = [
 const FACTS = [
   { key: 'name',       val: '"Yash Yadav"' },
   { key: 'role',       val: '"Frontend Developer"' },
-  { key: 'location',   val: '"Nashik, India"' },
+  { key: 'location',   val: '"Pune, India"' },
   { key: 'available',  val: 'true',   red: true },
   { key: 'projects',   val: '4' },
   { key: 'hackathons', val: '2' },
