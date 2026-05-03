@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import imgSpiderman from '../assets/spiderman/20260407_055437.png';
-import imgMan from '../assets/man/1775519899126.png';
+import imgDeepSentry   from '../assets/projects/DeepSentry img.png';
+import imgBloodLink    from '../assets/projects/bloodlink img.png';
+import imgAIReview     from '../assets/projects/AI-Code-Review img.png';
+import imgWeather      from '../assets/projects/weather App img.png';
+import imgPortfolio    from '../assets/projects/yash-porfolio img.png';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,10 +21,10 @@ const PROJECTS = [
     tech:  ['Python', 'PyTorch', 'FastAPI', 'HuggingFace', 'ViT'],
     stat:  '~92% acc',
     statLabel: 'MODEL_ACC',
-    img:   imgSpiderman,
+    img: imgDeepSentry,
     href:  'https://github.com/YAXH64/Deepsentry---Deepfake-Detector',
-    demo:  null,
-    blend: 'grayscale brightness-50',
+    demo:  'https://youtu.be/mFryagMguz0',
+    blend: 'brightness-75',
     accent:'#ff2d2d',
   },
   {
@@ -34,10 +37,10 @@ const PROJECTS = [
     tech:  ['HTML', 'CSS', 'JavaScript', 'REST API'],
     stat:  'Real-time',
     statLabel: 'RESPONSE',
-    img:   imgMan,
+    img: imgBloodLink,
     href:  'https://github.com/YAXH64/BloodLink',
     demo:  'https://bloodlink-plum.vercel.app/',
-    blend: 'grayscale brightness-40',
+    blend: 'brightness-75',
     accent:'#ff2d2d',
   },
   {
@@ -50,10 +53,10 @@ const PROJECTS = [
     tech:  ['Python', 'JS', 'YAML', 'HuggingFace', 'RL', 'LLM'],
     stat:  'HF × Meta',
     statLabel: 'HACKATHON',
-    img:   imgSpiderman,
+    img: imgAIReview,
     href:  'https://github.com/YAXH64/ai-code-review-openenv',
     demo:  'https://huggingface.co/spaces/Yaxh64/ai-code-review-env-v2',
-    blend: 'grayscale brightness-40 saturate-0',
+    blend: 'brightness-75',
     accent:'#a855f7',
   },
   {
@@ -66,10 +69,10 @@ const PROJECTS = [
     tech:  ['HTML', 'CSS', 'JavaScript', 'Weather API'],
     stat:  'Live AQI',
     statLabel: 'FEATURE',
-    img:   imgMan,
+    img: imgWeather,
     href:  'https://github.com/YAXH64/Weather-App',
     demo:  'https://yaxh64.github.io/Weather-App/',
-    blend: 'grayscale brightness-40',
+    blend: 'brightness-75',
     accent:'#38bdf8',
   },
   {
@@ -82,10 +85,10 @@ const PROJECTS = [
     tech:  ['React', 'Three.js', 'GSAP', 'Tailwind', 'Vite'],
     stat:  'Live ✓',
     statLabel: 'DEPLOYED',
-    img:   imgSpiderman,
+    img: imgPortfolio,
     href:  'https://github.com/YAXH64/Yash-Portfolio',
     demo:  'https://yashyadavdev.vercel.app',
-    blend: 'grayscale brightness-50',
+    blend: 'brightness-75',
     accent:'#22c55e',
   },
 ];
